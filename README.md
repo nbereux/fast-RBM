@@ -10,6 +10,7 @@ To install the package, you need to
 ```bash
 git clone https://github.com/nbereux/fast-RBM.git
 cd fast-RBM
+bash download_dataset.sh
 pip install -r requirements.txt
 pip install -e .
 ```
