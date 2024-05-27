@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fastrbm"
+version = "1.0.0"
+authors = [
+    { name="Nicolas Béreux", email="nicolas.bereux@gmail.com" },
+    { name="Aurélien Decelle"},
+    { name="Cyril Furtlehner"},
+    { name="Lorenzo Rosset"},
+    { name="Beatriz Seoane"},
+]
+description = "Package to train fast RBMs"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/nbereux/fast-RBM"
+Issues = "https://github.com/nbereux/fast-RBM/issues"
