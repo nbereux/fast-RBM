@@ -23,20 +23,6 @@ from fastrbm.methods.methods_binary import (
 Tensor = torch.Tensor
 
 
-def update_free_energy(free_energy: Tensor, logit_weights: Tensor) -> float:
-    """Estimates the free energy of the model using pop-MC.
-
-    Args:
-        free_energy (Tensor): Free energy baseline.
-        logit_weights (Tensor): Unnormalized log probability of the parallel chains.
-
-    Returns:
-        float: Estimate of the free energy.
-    """
-    free_energy -= torch.log((torch.exp(-logit_weights)).mean())
-    return free_energy.item()
-
-
 def update_parameters(
     data: Tuple[Tensor, Tensor, Tensor],
     parallel_chains: Tuple[Tensor, Tensor],
@@ -75,7 +61,7 @@ def update_parameters(
     grad_hbias = h_data_mean - h_gen_mean - (v_data_mean @ grad_weight_matrix)
     grad = (grad_vbias, grad_hbias, grad_weight_matrix)
 
-    # Weights of the chains # BEA: I changed to use the new gradient for the logit
+    # Weights of the chain
     dw = learning_rate * compute_energy(*parallel_chains, *grad)
     logit_weights += dw
 
@@ -86,31 +72,6 @@ def update_parameters(
     params_new = (vbias_new, hbias_new, weight_matrix_new)
     # Computes the new chain weights
     return (params_new, logit_weights, grad)
-
-
-def multinomial_resampling(
-    parallel_chains: Tuple[Tensor, Tensor], logit_weights: Tensor, device: torch.device
-) -> Tuple[Tensor, Tensor]:
-    """Performs the systematic resampling of the parallel chains according to their relative weight.
-
-    Args:
-        parallel_chains (Tuple[Tensor, Tensor]): (v, h) parallel chains.
-        logit_weights (Tensor): Unnormalized log probability of the parallel chains.
-        device (torch.device): Device.
-
-    Returns:
-        Tuple[Tensor, Tensor]: Resampled parallel chains.
-    """
-    v, h = parallel_chains
-    num_chains = v.shape[0]
-    logit_weights_shifted = logit_weights - logit_weights.min()
-    weights = torch.exp(-logit_weights_shifted) / torch.sum(
-        torch.exp(-logit_weights_shifted)
-    )
-    bootstrap_idxs = weights.multinomial(num_samples=num_chains, replacement=True)
-    v_resampled = v[bootstrap_idxs]
-    h_resampled = h[bootstrap_idxs]
-    return (v_resampled, h_resampled)
 
 
 @torch.jit.script
@@ -189,20 +150,11 @@ def fit_batch(
 
     # Resample the chains if the eps is smaller than the threshold
     ess = compute_ess(logit_weights=logit_weights)
-    # print(ess)
     if ess < min_eps and allow_resample:
-        # print("resample")
-        # parallel_chains = multinomial_resampling(
-        #     parallel_chains=parallel_chains, logit_weights=logit_weights, device=device
-        # )
-        # prev_parallel_chains = parallel_chains[0].clone()
         parallel_chains = systematic_resampling(
             parallel_chains=parallel_chains, logit_weights=logit_weights, device=device
-        )  # BEA: I have changed the resampling method
-        # print(f"norm_diff: {(prev_parallel_chains - parallel_chains[0]).norm()}")
+        )
         logit_weights = torch.zeros(size=(len(parallel_chains[0]),), device=device)
-        ess_ps = compute_ess(logit_weights=logit_weights)
-        # print(f"ess post sampling: {ess_ps}")
     # Write the logs
     logs = (ess, eps)
     return logit_weights, parallel_chains, params, grad, logs
@@ -397,7 +349,6 @@ def restore_training(
     # Open the log file if it exists
     log_filename = filename.parent / Path(f"log-{filename.stem}.csv")
     record_log = log_filename.exists()
-    print(record_log)
     if record_log:
         log_file = open(log_filename, "a")
 
