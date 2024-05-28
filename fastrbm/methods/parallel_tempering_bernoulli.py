@@ -378,3 +378,4 @@ def PTsampling(
             save_chains.append(chains[-1].cpu().numpy())
         steps += increment  # * n_models
     return chains, save_chains, acc_rate
+
