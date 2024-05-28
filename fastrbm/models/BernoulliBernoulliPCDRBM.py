@@ -125,7 +125,6 @@ def fit(
     num_visibles = dataset.get_num_visibles()
 
     # Create file for saving the model
-    # timestamp = str(".".join(list(str(time.localtime()[i]) for i in range(5))))
     filename = Path(filename)
     filename = filename.parent / Path(f"{filename.name}")
     # Create log file for recording the important observables
@@ -247,7 +246,6 @@ def restore_training(
     # Open the log file if it exists
     log_filename = filename.parent / Path(f"log-{filename.stem}.csv")
     record_log = log_filename.exists()
-    print(record_log)
     if record_log:
         log_file = open(log_filename, "a")
     # Load the last checkpoint
