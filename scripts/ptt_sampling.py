@@ -131,8 +131,6 @@ def main(filename, filename_rcm, out_file, num_samples, it_mcmc, target_acc_rate
     if filename_rcm is not None:
         tmp_name = "best_trial"
         with h5py.File(filename_rcm, "r") as f:
-            print(f.keys())
-            print(f[tmp_name].keys())
             U = torch.from_numpy(np.array(f["const"]["U"])).to(device)
             m = torch.from_numpy(np.array(f["const"]["m"])).to(device)
             mu = torch.from_numpy(np.array(f["const"]["mu"])).to(device)
