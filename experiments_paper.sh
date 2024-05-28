@@ -30,15 +30,15 @@ python scripts/train_rbm.py -d MNIST --subset_labels 0 1 --variable_type Bernoul
 
 
 ## PTT sampling 
-python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MICKEY.h5 -o sample_RBM_MICKEY.h5 --filename_rcm ./experiments_paper/RCM_MICKEY.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
-python scripts/ptt_sampling.py -i ./experiments_paper/RBM_GENE.h5 -o sample_RBM_GENE.h5 --filename_rcm ./experiments_paper/RCM_GENE.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
-python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MNIST01.h5 -o sample_RBM_MNIST01.h5 --filename_rcm ./experiments_paper/RCM_MNIST01.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MICKEY.h5 -o sample_RBM_MICKEY.h5 --filename_rcm ./experiments_paper/RCM_MICKEY.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/RBM_GENE.h5 -o sample_RBM_GENE.h5 --filename_rcm ./experiments_paper/RCM_GENE.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MNIST01.h5 -o sample_RBM_MNIST01.h5 --filename_rcm ./experiments_paper/RCM_MNIST01.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
 
-python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MICKEY_from_scratch.h5 -o sample_RBM_MICKEY_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
-python scripts/ptt_sampling.py -i ./experiments_paper/RBM_GENE_from_scratch.h5 -o sample_RBM_GENE_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
-python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MNIST01_from_scratch.h5 -o sample_RBM_MNIST01_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MICKEY_from_scratch.h5 -o sample_RBM_MICKEY_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/RBM_GENE_from_scratch.h5 -o sample_RBM_GENE_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/RBM_MNIST01_from_scratch.h5 -o sample_RBM_MNIST01_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
 
-python scripts/ptt_sampling.py -i ./experiments_paper/JarRBM_MICKEY_from_scratch.h5 -o ./experiments_paper/sample_JarRBM_MICKEY_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
-python scripts/ptt_sampling.py -i ./experiments_paper/JarRBM_GENE_from_scratch.h5 -o ./experiments_paper/sample_JarRBM_GENE_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
-python scripts/ptt_sampling.py -i ./experiments_paper/JarRBM_MNIST01_from_scratch.h5 -o ./experiments_paper/sample_JarRBM_MNIST01_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.9 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/JarRBM_MICKEY_from_scratch.h5 -o ./experiments_paper/sample_JarRBM_MICKEY_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/JarRBM_GENE_from_scratch.h5 -o ./experiments_paper/sample_JarRBM_GENE_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
+python scripts/ptt_sampling.py -i ./experiments_paper/JarRBM_MNIST01_from_scratch.h5 -o ./experiments_paper/sample_JarRBM_MNIST01_from_scratch.h5 --num_samples 10000 --target_acc_rate 0.3 --it_mcmc 1000
 
