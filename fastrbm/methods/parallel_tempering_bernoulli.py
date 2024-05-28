@@ -217,7 +217,7 @@ def pt_sampling(rcm, params_rcm, params_rbm, num_samples, it_mcmc, increment):
         chains_rcm = sample_rcm(**rcm, device=device, num_samples=num_samples)
         chains_rcm = (chains_rcm + 1) / 2
         chains_rbm = sample_state(
-            parallel_chains=(chains_rbm, torch.zeros_like(chains_rbm)),
+            chains=(chains_rbm, torch.zeros_like(chains_rbm)),
             params=params_rbm,
             gibbs_steps=increment,
         )
@@ -378,4 +378,3 @@ def PTsampling(
             save_chains.append(chains[-1].cpu().numpy())
         steps += increment  # * n_models
     return chains, save_chains, acc_rate
-
