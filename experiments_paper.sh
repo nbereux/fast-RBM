@@ -18,7 +18,7 @@ python scripts/rcm_to_rbm.py -i ./experiments_paper/RCM_MNIST01.h5 -o ./experime
 ## Continue training
 python scripts/train_rbm.py -d MICKEY --variable_type Bernoulli --use_torch --model BernoulliBernoulliPCDRBM --filename ./experiments_paper/RBM_MICKEY.h5 --epochs 10000 --n_save 1000 --log --dtype float --restore
 python scripts/train_rbm.py -d GENE --variable_type Bernoulli --use_torch --model BernoulliBernoulliPCDRBM --filename ./experiments_paper/RBM_GENE.h5 --epochs 10000 --n_save 1000 --log --dtype float --restore
-python scripts/train_rbm.py -d MNIST01 --variable_type Bernoulli --use_torch --model BernoulliBernoulliPCDRBM --filename ./experiments_paper/RBM_MNIST01.h5 --epochs 10000 --n_save 1000 --log --dtype float --restore
+python scripts/train_rbm.py -d MNIST --subset_labels 0 1 --variable_type Bernoulli --use_torch --model BernoulliBernoulliPCDRBM --filename ./experiments_paper/RBM_MNIST01.h5 --epochs 10000 --n_save 1000 --log --dtype float --restore
 
 ## Train from scratch
 python scripts/train_rbm.py -d MICKEY --variable_type Bernoulli --use_torch --filename ./experiments_paper/JarRBM_MICKEY_from_scratch.h5 --epochs 10000 --n_save 1000 --log --dtype float --model BernoulliBernoulliJarJarRBM --learning_rate 0.01 --num_hiddens 100 --gibbs_steps 100 --batch_size 2000 --num_chains 2000 --min_eps 0.7
