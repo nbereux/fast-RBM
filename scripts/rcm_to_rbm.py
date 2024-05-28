@@ -140,6 +140,57 @@ def ising_to_bernoulli(params: BBParams) -> BBParams:
     return params
 
 
+@torch.jit.script
+def sample_hiddens(chains: Chain, params: BBParams, beta: float = 1.0) -> Chain:
+    chains.mean_hidden = torch.sigmoid(
+        beta * (params.hbias + (chains.visible @ params.weight_matrix))
+    )
+    chains.hidden = torch.bernoulli(chains.mean_hidden)
+    return chains
+
+
+@torch.jit.script
+def sample_visibles(chains: Chain, params: BBParams, beta: float = 1.0) -> Chain:
+    chains.mean_visible = torch.sigmoid(
+        beta * (params.vbias + (chains.hidden @ params.weight_matrix.T))
+    )
+    chains.visible = torch.bernoulli(chains.mean_visible)
+    return chains
+
+
+def sample_state(
+    gibbs_steps: int, chains: Chain, params: BBParams, beta: float = 1.0
+) -> Chain:
+    for _ in range(gibbs_steps):
+        chains = sample_hiddens(chains=chains, params=params, beta=beta)
+        chains = sample_visibles(chains=chains, params=params, beta=beta)
+    return chains
+
+
+def init_chains(
+    num_samples: int,
+    params: BBParams,
+    start_v: torch.Tensor = None,
+) -> Chain:
+    num_visibles, _ = params.weight_matrix.shape
+    mean_visible = (
+        torch.ones(size=(num_samples, num_visibles), device=params.weight_matrix.device)
+        / 2
+    )
+    if start_v is None:
+        visible = torch.bernoulli(mean_visible)
+    else:
+        visible = start_v
+    mean_hidden = torch.sigmoid((params.hbias + (visible @ params.weight_matrix)))
+    hidden = torch.bernoulli(mean_hidden)
+    return Chain(
+        visible=visible,
+        hidden=hidden,
+        mean_visible=mean_visible,
+        mean_hidden=mean_hidden,
+    )
+
+
 def convert(args: dict, device: torch.device, dtype: torch.dtype):
     # Set the random seed
     if args["seed"] is not None:
@@ -194,76 +245,22 @@ def convert(args: dict, device: torch.device, dtype: torch.dtype):
     params.weight_matrix = torch.cat([params.weight_matrix, weight_matrix_add], dim=1)
     num_hiddens = num_hiddens_rcm + num_hiddens_add
 
-    # if args["batch_size"] > parallel_chains_v.shape[0]:
     parallel_chains_v = sample_rbm(p_m, m, mu, U, args["num_chains"], device, dtype)
 
     # Convert parallel chains into (0, 1) format
     parallel_chains_v = (parallel_chains_v + 1) / 2
-    print(parallel_chains_v)
+
     # Thermalize chains
     print("Thermalizing the parallel chains...")
     num_chains = len(parallel_chains_v)
 
-    @torch.jit.script
-    def sample_hiddens(chains: Chain, params: BBParams, beta: float = 1.0) -> Chain:
-        chains.mean_hidden = torch.sigmoid(
-            beta * (params.hbias + (chains.visible @ params.weight_matrix))
-        )
-        chains.hidden = torch.bernoulli(chains.mean_hidden)
-        return chains
-
-    @torch.jit.script
-    def sample_visibles(chains: Chain, params: BBParams, beta: float = 1.0) -> Chain:
-        chains.mean_visible = torch.sigmoid(
-            beta * (params.vbias + (chains.hidden @ params.weight_matrix.T))
-        )
-        chains.visible = torch.bernoulli(chains.mean_visible)
-        return chains
-
-    def sample_state(
-        gibbs_steps: int, chains: Chain, params: BBParams, beta: float = 1.0
-    ) -> Chain:
-        for _ in range(gibbs_steps):
-            chains = sample_hiddens(chains=chains, params=params, beta=beta)
-            chains = sample_visibles(chains=chains, params=params, beta=beta)
-        return chains
-
-    def init_chains(
-        num_samples: int,
-        params: BBParams,
-        start_v: torch.Tensor = None,
-    ) -> Chain:
-        num_visibles, num_hiddens = params.weight_matrix.shape
-        print(params.weight_matrix.dtype)
-        mean_visible = (
-            torch.ones(
-                size=(num_samples, num_visibles), device=params.weight_matrix.device
-            )
-            / 2
-        )
-        if start_v is None:
-            visible = torch.bernoulli(mean_visible)
-        else:
-            visible = start_v
-        mean_hidden = torch.sigmoid((params.hbias + (visible @ params.weight_matrix)))
-        hidden = torch.bernoulli(mean_hidden)
-        return Chain(
-            visible=visible,
-            hidden=hidden,
-            mean_visible=mean_visible,
-            mean_hidden=mean_hidden,
-        )
-
     parallel_chains = init_chains(num_chains, params=params, start_v=parallel_chains_v)
-    print(parallel_chains.visible)
 
     parallel_chains = sample_state(
         chains=parallel_chains,
         params=params,
         gibbs_steps=args["therm_steps"],
     )
-
-    print(parallel_chains.visible)
 
     # Generate output file
     with h5py.File(args["output"], "w") as f:
@@ -282,15 +279,7 @@ def convert(args: dict, device: torch.device, dtype: torch.dtype):
         hyperparameters["binary_threshold"] = 0.3
         hyperparameters["dataset_name"] = args["data"]
 
-        # hyperparameters["num_chains"] = num_chains
-        # hyperparameters["gibbs_steps_history"] = (
-        #     torch.full((20,), 10, device=device).cpu().numpy()
-        # )
-        # hyperparameters["eps_history"] = (
-        #     torch.full((20,), 1, device=device, dtype=torch.int).cpu().numpy()
-        # )
-
-        checkpoint = f.create_group(f"epoch_0")
+        checkpoint = f.create_group("epoch_0")
         checkpoint["torch_rng_state"] = torch.get_rng_state()
         checkpoint["numpy_rng_arg0"] = np.random.get_state()[0]
         checkpoint["numpy_rng_arg1"] = np.random.get_state()[1]
