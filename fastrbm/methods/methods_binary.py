@@ -1,4 +1,3 @@
-import h5py
 from typing import Tuple
 import torch
 
@@ -216,4 +215,3 @@ def compute_ess(logit_weights: Tensor) -> Tensor:
     numerator = torch.square(torch.mean(torch.exp(-lwc)))
     denominator = torch.mean(torch.exp(-2.0 * lwc))
     return numerator / denominator
-
