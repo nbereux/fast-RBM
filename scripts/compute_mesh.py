@@ -81,7 +81,6 @@ def main(args: dict):
     intrinsic_dimension = len(args["dimension"])
     train_set = train_dataset.data
     print(train_dataset)
-
     U = compute_U(
         M=train_set,
         intrinsic_dimension=intrinsic_dimension,
@@ -101,7 +100,8 @@ def main(args: dict):
                 dtype=dtype,
             )
             for i in range(U.shape[0])
-        ]
+        ],
+        indexing="ij",
     )
     m = torch.vstack([elt.flatten() for elt in mesh]).T
     m, _, _ = batched_lagrange_mult(m=m, U=U)
@@ -121,7 +121,8 @@ def main(args: dict):
                 dtype=dtype,
             )
             for i in range(U.shape[0])
-        ]
+        ],
+        indexing="ij",
     )
     m = torch.vstack([elt.flatten() for elt in mesh]).T
     m, mu, configurational_entropy = batched_lagrange_mult(m=m, U=U)
