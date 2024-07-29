@@ -164,6 +164,7 @@ def fit(
     log_file = open(log_filename, "a")
     pbar = tqdm(initial=0, total=epochs, colour="red", dynamic_ncols=True, ascii="-#")
     pbar.set_description("Training RBM")
+    start = time.time()
     num_updates = 0
     for epoch in range(epochs + 1):
         for batch in dataloader:
@@ -215,6 +216,7 @@ def fit(
                 checkpoint["numpy_rng_arg4"] = np.random.get_state()[4]
                 del file_model["parallel_chains"]
                 file_model["parallel_chains"] = parallel_chains[0].cpu().numpy()
+                checkpoint["time"] = time.time() - start
 
         pbar.update(1)
     log_file.close()
@@ -282,6 +284,7 @@ def restore_training(
         batch_size = int(file_model["hyperparameters"]["batch_size"][()])
         gibbs_steps = int(file_model["hyperparameters"]["gibbs_steps"][()])
         learning_rate = file_model["hyperparameters"]["learning_rate"][()]
+        time_elapsed = file_model[last_file_key]["time"][()]
 
     # Initialize the chains, import the data
     params = (vbias, hbias, weight_matrix)
@@ -306,6 +309,7 @@ def restore_training(
     pbar = tqdm(
         initial=num_epochs, total=epochs, colour="red", dynamic_ncols=True, ascii="-#"
     )
+    start = time.time()
     pbar.set_description("Training RBM")
     for epoch in range(num_epochs + 1, epochs + 1):
         for batch in dataloader:
@@ -354,6 +358,7 @@ def restore_training(
                 checkpoint["numpy_rng_arg4"] = np.random.get_state()[4]
                 del file_model["parallel_chains"]
                 file_model["parallel_chains"] = parallel_chains[0].cpu().numpy()
+                file_model["time"] = time.time() - start + time_elapsed
                 file_model.close()
         pbar.update(1)
 
