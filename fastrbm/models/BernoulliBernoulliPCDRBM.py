@@ -358,7 +358,7 @@ def restore_training(
                 checkpoint["numpy_rng_arg4"] = np.random.get_state()[4]
                 del file_model["parallel_chains"]
                 file_model["parallel_chains"] = parallel_chains[0].cpu().numpy()
-                file_model["time"] = time.time() - start + time_elapsed
+                checkpoint["time"] = time.time() - start + time_elapsed
                 file_model.close()
         pbar.update(1)
 
