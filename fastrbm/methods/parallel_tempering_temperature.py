@@ -128,6 +128,7 @@ def swap_configurations(
     vbias, hbias, weight_matrix = params
     parallel_chains_v, parallel_chains_h = chains
     _, n_chains, L = parallel_chains_v.shape
+    H = parallel_chains_h.shape[-1]
     device = weight_matrix.device
     acc_rate = []
     for idx in range(inverse_temperatures.shape[0]-1):
@@ -146,13 +147,13 @@ def swap_configurations(
             swap_chain.unsqueeze(1).repeat(1, L), parallel_chains_v[idx + 1], parallel_chains_v[idx]
         )
         swapped_chains_h_0 = torch.where(
-            swap_chain.unsqueeze(1).repeat(1, L), parallel_chains_h[idx + 1], parallel_chains_h[idx]
+            swap_chain.unsqueeze(1).repeat(1, H), parallel_chains_h[idx + 1], parallel_chains_h[idx]
         )
         swapped_chains_v_1 = torch.where(
             swap_chain.unsqueeze(1).repeat(1, L), parallel_chains_v[idx], parallel_chains_v[idx + 1]
         )
         swapped_chains_h_1 = torch.where(
-            swap_chain.unsqueeze(1).repeat(1, L), parallel_chains_h[idx], parallel_chains_h[idx + 1]
+            swap_chain.unsqueeze(1).repeat(1, H), parallel_chains_h[idx], parallel_chains_h[idx + 1]
         )
         parallel_chains_v[idx] = swapped_chains_v_0
         parallel_chains_h[idx] = swapped_chains_h_0
