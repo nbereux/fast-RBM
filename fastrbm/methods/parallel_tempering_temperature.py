@@ -97,10 +97,16 @@ def find_inverse_temperatures(
         )
         
         _, acc_rate = swap_configurations(
-            chains=torch.vstack([
-                (prev_chains[0].unsqueeze(0), prev_chains[1].unsqueeze(0)),
-                (new_chains[0].unsqueeze(0), new_chains[1].unsqueeze(0))
-            ]),
+            chains=(
+                torch.vstack([
+                    prev_chains[0].unsqueeze(0),
+                    new_chains[0].unsqueeze(0)
+                ]),
+                torch.vstack([
+                    prev_chains[1].unsqueeze(0),
+                    new_chains[1].unsqueeze(0)
+                ])
+            ),
             params=params,
             inverse_temperatures=torch.tensor([
                 selected_temperatures[-1],
