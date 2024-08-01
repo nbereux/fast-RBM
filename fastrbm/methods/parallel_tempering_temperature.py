@@ -177,7 +177,7 @@ def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains:
         device=weight_matrix.device
     )
     parallel_chains_v = parallel_chains_v.reshape(inverse_temperatures.shape[0], num_chains, weight_matrix.shape[0])
-    parallel_chains_h = parallel_chains_v.reshape(inverse_temperatures.shape[0], num_chains, weight_matrix.shape[1])
+    parallel_chains_h = parallel_chains_h.reshape(inverse_temperatures.shape[0], num_chains, weight_matrix.shape[1])
 
     # Annealing to initialize the chains
     for i in range(inverse_temperatures.shape[0]):
