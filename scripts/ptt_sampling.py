@@ -147,7 +147,8 @@ def main(filename, filename_rcm, out_file, num_samples, it_mcmc, target_acc_rate
         device=device,
         target_acc_rate=target_acc_rate,
     )
-
+    with h5py.File(out_file, "w") as f:
+        f["x"]=1
     chains = init_sampling(
         fname_rcm=filename_rcm,
         fname_rbm=filename,
@@ -165,7 +166,7 @@ def main(filename, filename_rcm, out_file, num_samples, it_mcmc, target_acc_rate
         increment=1,
     )
 
-    with h5py.File(out_file, "w") as f:
+    with h5py.File(out_file, "a") as f:
         f["gen_chains"] = chains.cpu().numpy()
         f["sel_epochs"] = sel_epochs
 
