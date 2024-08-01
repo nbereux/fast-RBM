@@ -196,7 +196,7 @@ def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains:
                 gibbs_steps=increment,
                 beta=inverse_temperatures[i]
             )
-        index.append(torch.ones(parallel_chains_v.shape[0], device=parallel_chains_v.device) * i)
+        index.append(torch.ones(parallel_chains_v.shape[1], device=parallel_chains_v.device) * i)
             
     
     counts = 0
