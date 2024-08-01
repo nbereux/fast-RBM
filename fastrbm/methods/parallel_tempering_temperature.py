@@ -111,7 +111,8 @@ def find_inverse_temperatures(
             inverse_temperatures=torch.tensor([
                 selected_temperatures[-1],
                 inverse_temperatures[i]
-            ])
+            ]),
+            show_acc_rate=False,
         )
         if acc_rate[-1] < target_acc_rate+0.1:
             selected_temperatures.append(inverse_temperatures[i])
