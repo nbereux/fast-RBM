@@ -17,9 +17,12 @@ def main(filename, out_file, num_samples, it_mcmc, target_acc_rate):
     device = "cuda"
     age = get_all_epochs(filename)[-1]
     params = load_model(filename, age, device=device)
+    with h5py.File(out_file, "w") as f:
+        f["x"]= 1
+
     (chains_v, chains_h), inverse_temperatures, index = PTSampling(it_mcmc=it_mcmc, increment=1, target_acc_rate=target_acc_rate, num_chains=num_samples, params=params, out_file=out_file)
     
-    with h5py.File(out_file, "w") as f:
+    with h5py.File(out_file, "a") as f:
         f["gen_chains"] = chains_v.cpu().numpy()
         f["sel_beta"] = inverse_temperatures
 
