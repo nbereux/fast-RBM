@@ -1,5 +1,6 @@
-from typing import Tuple
+from typing import Tuple, Optional, List
 
+import h5py
 import torch
 import numpy as np
 
@@ -96,7 +97,7 @@ def find_inverse_temperatures(
             gibbs_steps=10
         )
         
-        _, acc_rate = swap_configurations(
+        _, acc_rate, _ = swap_configurations(
             chains=(
                 torch.vstack([
                     prev_chains[0].unsqueeze(0),
@@ -125,7 +126,8 @@ def swap_configurations(
         chains:Tuple[Tensor, Tensor],
         params: Tuple[Tensor, Tensor, Tensor],
         inverse_temperatures: Tensor,
-        show_acc_rate: bool
+        show_acc_rate: bool,
+        index: Optional[List[Tensor]] = None,
 ):
     vbias, hbias, weight_matrix = params
     parallel_chains_v, parallel_chains_h = chains
@@ -143,6 +145,11 @@ def swap_configurations(
             - energy_0*inverse_temperatures[idx+1]
         )
         swap_chain = torch.exp(delta_E) > torch.rand(size=(n_chains,), device=device)
+        if index is not None:
+            swapped_index_0 = torch.where(swap_chain, index[idx + 1], index[idx])
+            swapped_index_1 = torch.where(swap_chain, index[idx], index[idx + 1])
+            index[idx] = swapped_index_0
+            index[idx + 1] = swapped_index_1
         acc_rate.append((swap_chain.sum() / n_chains).cpu().numpy())
 
         swapped_chains_v_0 = torch.where(
@@ -163,10 +170,10 @@ def swap_configurations(
         parallel_chains_h[idx + 1] = swapped_chains_h_1
     if show_acc_rate:
         print(f"acc_rate: {np.array(acc_rate)[:]}")
-    return (parallel_chains_v, parallel_chains_h), np.array(acc_rate)
+    return (parallel_chains_v, parallel_chains_h), np.array(acc_rate), index
 
 
-def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains: int, params: Tuple[Tensor,Tensor,Tensor]):
+def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains: int, params: Tuple[Tensor,Tensor,Tensor], out_file):
     vbias, hbias, weight_matrix = params
     
     inverse_temperatures = find_inverse_temperatures(target_acc_rate, params)
@@ -180,6 +187,7 @@ def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains:
     parallel_chains_h = parallel_chains_h.reshape(inverse_temperatures.shape[0], num_chains, weight_matrix.shape[1])
 
     # Annealing to initialize the chains
+    index = []
     for i in range(inverse_temperatures.shape[0]):
         for j in range(i,inverse_temperatures.shape[0]):
             parallel_chains_v[j], parallel_chains_h[j] = sample_state(
@@ -188,6 +196,7 @@ def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains:
                 gibbs_steps=increment,
                 beta=inverse_temperatures[i]
             )
+        index.append(torch.ones(parallel_chains_v.shape[0], device=parallel_chains_v.device) * i)
             
     
     counts = 0
@@ -202,13 +211,16 @@ def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains:
                 beta=inverse_temperatures[i]
             )
         # Swap chains
-        (parallel_chains_v, parallel_chains_h), acc_rate = swap_configurations(
+        (parallel_chains_v, parallel_chains_h), acc_rate, index = swap_configurations(
             chains=(parallel_chains_v, parallel_chains_h),
             params=params,
             inverse_temperatures=inverse_temperatures,
             show_acc_rate=True,
+            index=index,
         )
+        with h5py.File(out_file, "a") as f:
+            f[f"index_{counts}"] = torch.vstack(index).cpu().numpy()
         
-    return (parallel_chains_v, parallel_chains_h), inverse_temperatures
+    return (parallel_chains_v, parallel_chains_h), inverse_temperatures, index
     
 
