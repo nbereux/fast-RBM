@@ -117,6 +117,8 @@ def find_inverse_temperatures(
         if acc_rate[-1] < target_acc_rate+0.1:
             selected_temperatures.append(inverse_temperatures[i])
             prev_chains = (new_chains[0].clone(), new_chains[1].clone())
+    if selected_temperatures[-1]!= 1.:
+        selected_temperatures.append(1)
     return torch.tensor(selected_temperatures)
     
 def swap_configurations(
