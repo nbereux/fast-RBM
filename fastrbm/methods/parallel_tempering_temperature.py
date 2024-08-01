@@ -98,8 +98,8 @@ def find_inverse_temperatures(
         
         _, acc_rate = swap_configurations(
             chains=torch.vstack([
-                prev_chains.unsqueeze(0),
-                new_chains.unsqueeze(0)
+                (prev_chains[0].unsqueeze(0), prev_chains[1].unsqueeze(0)),
+                (new_chains.unsqueeze(0), new_chains[1].unsqueeze(0))
             ]),
             params=params,
             inverse_temperatures=torch.tensor([
@@ -195,7 +195,8 @@ def PTSampling(it_mcmc: int, increment: int, target_acc_rate: float, num_chains:
         (parallel_chains_v, parallel_chains_h), acc_rate = swap_configurations(
             chains=(parallel_chains_v, parallel_chains_h),
             params=params,
-            inverse_temperatures=inverse_temperatures
+            inverse_temperatures=inverse_temperatures,
+            show_acc_rate=True,
         )
         
     return (parallel_chains_v, parallel_chains_h), inverse_temperatures
